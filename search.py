@@ -10,15 +10,26 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QTextBrowser
 from PyQt5.QtGui import QTextCursor
-
-
-
+from Inputing import read_corpus
+import requests
 
 class Ui_MainWindow(object):
 
     def show(self):
-        self.paper = ['Mohamed Morshedy Hamed ', 'Mustafa Ghonaim', 'zoz']
-        self.result = "\n\n#####################################################\n".join(self.paper)
+        self.papers = read_corpus()
+        self.paper_names = self.papers.keys()
+        self.formatted_print = []
+        for paper_name in self.paper_names:
+            res = requests.get(f"/api/summarize/{self.paper_names[paper_name]}")
+            if res.status_code == 200:
+                self.papers[paper_name] = res
+            else:
+                self.papers[paper_name] = "SUMMARIZATION API DIDN'T WORK WELL"
+            
+            self.formatted_print.append(paper_name + "\nSummarization:\n" +self.paper_names[paper_name])
+
+        
+        self.result = "\n\n#####################################################\n".join(self.formatted_print)
         self.textBrowser.moveCursor(QTextCursor.Start)
         self.textBrowser.append(self.result)
     def setupUi(self, MainWindow):
